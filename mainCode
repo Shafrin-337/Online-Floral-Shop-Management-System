@@ -1,0 +1,503 @@
+--drop all tables
+
+drop table orderTable;
+drop table ratingTable;
+drop table commentTable;
+drop table productTable;
+drop table managementTable;
+drop table customerTable;
+
+
+--drop all sequences
+
+drop sequence customerSequence;
+drop sequence managementSequence;
+drop sequence productSequence;
+drop sequence ratingSequence;
+drop sequence commentSequence;
+drop sequence orderSequence;
+
+
+--drop all procedures
+
+drop procedure take_order;
+drop procedure check_availability;
+drop procedure update_amount;
+
+
+--drop all views
+
+drop view ratingView;
+drop view customerView;
+
+
+--create necessary tables
+
+create table customerTable(
+customerID number NOT NULL,
+customerName varchar(20) NOT NULL,
+customerTitle varchar(20) NOT NULL,
+joinDate date DEFAULT sysdate,
+deliveryAddress varchar(20) NOT NULL,
+contactNumber varchar(20) NOT NULL,
+password varchar(20) NOT NULL,
+activeStatus nchar(10) default 'New member' NOT NULL,
+primary key(customerID)
+);
+
+create table managementTable(
+managementID number NOT NULL,
+managementName varchar(20) NOT NULL,
+primary key(managementID)
+);
+
+create table productTable(
+productID number NOT NULL,
+productName varchar(20) NOT NULL,
+unitPrice number NOT NULL,
+productAvailable number NOT NULL,
+productSold number NOT NULL,
+productDescription varchar(2000) NOT NULL,
+managementID number NOT NULL,
+primary key(productID),
+foreign key(managementID) references managementTable(managementID) on delete cascade
+);
+
+create table ratingTable(
+ratingID number NOT NULL,
+rating number NOT NULL,
+customerID number NOT NULL,
+productID number NOT NULL,
+primary key(ratingID),
+foreign key(customerID) references customerTable(customerID) on delete cascade,
+foreign key(productID) references productTable(productID) on delete cascade
+);
+
+create table commentTable(
+commentID number NOT NULL,
+commentDescription varchar(2000) NOT NULL,
+customerID number NOT NULL,
+productID number NOT NULL,
+primary key(commentID),
+foreign key(customerID) references customerTable(customerID) on delete cascade,
+foreign key(productID) references productTable(productID) on delete cascade
+);
+
+create table orderTable(
+orderID number NOT NULL,
+customerID number NOT NULL,
+productID number NOT NULL,
+unitPrice number NOT NULL,
+quantity number NOT NULL,
+totalPrice number NOT NULL,
+orderDate date DEFAULT sysdate,
+receivedDate date DEFAULT sysdate+7,
+primary key(orderID),
+foreign key(customerID) references customerTable(customerID) on delete cascade,
+foreign key(productID) references productTable(productID) on delete cascade
+);
+
+
+--create necessary sequenceces
+
+create sequence customerSequence start with 1
+increment by 1
+minvalue 1
+maxvalue 10000;
+
+create sequence managementSequence start with 1
+increment by 1
+minvalue 1
+maxvalue 10000;
+
+create sequence productSequence start with 1
+increment by 1
+minvalue 1
+maxvalue 10000;
+
+create sequence ratingSequence start with 1
+increment by 1
+minvalue 1
+maxvalue 10000;
+
+create sequence commentSequence start with 1
+increment by 1
+minvalue 1
+maxvalue 10000;
+
+create sequence orderSequence start with 1
+increment by 1
+minvalue 1
+maxvalue 10000;
+
+--show the name of existed tables in the Oracle database
+
+select * from tab;
+
+
+--show column definition for the specified tables
+
+describe customerTable;
+describe managementTable;
+describe productTable;
+describe ratingTable;
+describe commentTable;
+describe orderTable;
+
+
+--add columns in the table
+
+alter table customerTable
+add (age varchar(5) NOT NULL,
+     emailAddress varchar(20) NOT NULL);
+describe customerTable;
+
+
+--modify the datatype of column in a table
+
+alter table customerTable
+modify (age int );
+describe customerTable;
+
+
+--rename the column of the table
+
+alter table customerTable
+rename column deliveryAddress to address;
+describe customerTable;
+
+--drop column of a table
+
+alter table customerTable
+drop column age;
+describe customerTable;
+
+
+--implementation of pl/sql to insert data in the table 
+
+SET SERVEROUTPUT ON
+declare
+begin	
+insert into customerTable values(customerSequence.nextval,'Shafrin','Sultana',date'2020-12-01','Khulna','0199284','samin337',default,'samin@gmail.com');
+insert into customerTable values(customerSequence.nextval,'Tasnim','Sultana',date'2020-06-07','Barisal','0121240','taki482',default,'taki@gmail.com');
+insert into customerTable values(customerSequence.nextval,'Fouzia','Siddique',date'2021-01-01','Cumilla','0544844','nitu111',default,'nitu@gmail.com');
+insert into customerTable values(customerSequence.nextval,'Summaiya','Siddique',default,'Dhaka','0123456','juthi983',default,'juthi@gmail.com');
+insert into customerTable values(customerSequence.nextval,'Jubayer','Siddique',default,'Dhaka','00987653','sajid211',default,'sajid@gmail.com');
+commit;
+dbms_output.put_line('Values Inserted in the customer table');
+
+insert into managementTable values(managementSequence.nextval,'Flower');
+insert into managementTable values(managementSequence.nextval,'Flower-bouquet');
+insert into managementTable values(managementSequence.nextval,'Flower-ornaments');
+insert into managementTable values(managementSequence.nextval,'Decorations');
+commit;
+dbms_output.put_line('Values Inserted in the management table');
+
+insert into productTable values(productSequence.nextval,'Rose',20,50,0,'Various color available',1);
+insert into productTable values(productSequence.nextval,'Sun flower',50,50,0,'Various color available',1);
+insert into productTable values(productSequence.nextval,'Merigold',25,120,0,'Various color available',1);
+insert into productTable values(productSequence.nextval,'Rose-bouquet',500,10,0,'Customized version available',2);
+insert into productTable values(productSequence.nextval,'Tube rose bouquet',100,20,0,'Customized version available',2);
+insert into productTable values(productSequence.nextval,'Exclusive bouquet',200,10,0,'Our special collection',2);
+insert into productTable values(productSequence.nextval,'Floral ear ring',200,12,0,'Various design available',3);
+insert into productTable values(productSequence.nextval,'Floral head band',100,20,0,'Customized version available',3);
+insert into productTable values(productSequence.nextval,'Floral set',500,10,0,'Various design available',3);
+insert into productTable values(productSequence.nextval,'Birthday decoration',2000,10,0,'For birthday purpose',4);
+insert into productTable values(productSequence.nextval,'Wedding decoration',5000,10,0,'For wedding purpore',4);
+commit;
+dbms_output.put_line('Values Inserted in the product table');
+
+insert into ratingTable values(ratingSequence.nextval,2,1,1);
+insert into ratingTable values(ratingSequence.nextval,3,2,3);
+insert into ratingTable values(ratingSequence.nextval,4,3,5);
+insert into ratingTable values(ratingSequence.nextval,1,3,1);
+insert into ratingTable values(ratingSequence.nextval,1,1,1);
+insert into ratingTable values(ratingSequence.nextval,5,5,11);
+insert into ratingTable values(ratingSequence.nextval,5,2,2);
+insert into ratingTable values(ratingSequence.nextval,5,3,4);
+insert into ratingTable values(ratingSequence.nextval,4,2,6);
+insert into ratingTable values(ratingSequence.nextval,2,1,8);
+insert into ratingTable values(ratingSequence.nextval,2,1,10);
+insert into ratingTable values(ratingSequence.nextval,3,1,1);
+insert into ratingTable values(ratingSequence.nextval,4,2,2);
+insert into ratingTable values(ratingSequence.nextval,1,2,3);
+insert into ratingTable values(ratingSequence.nextval,1,3,4);
+insert into ratingTable values(ratingSequence.nextval,5,2,5);
+insert into ratingTable values(ratingSequence.nextval,5,4,6);
+insert into ratingTable values(ratingSequence.nextval,5,4,1);
+insert into ratingTable values(ratingSequence.nextval,4,5,8);
+insert into ratingTable values(ratingSequence.nextval,2,5,1);
+insert into ratingTable values(ratingSequence.nextval,2,5,10);
+insert into ratingTable values(ratingSequence.nextval,3,4,11);
+insert into ratingTable values(ratingSequence.nextval,4,3,1);
+insert into ratingTable values(ratingSequence.nextval,1,2,2);
+insert into ratingTable values(ratingSequence.nextval,1,1,3);
+insert into ratingTable values(ratingSequence.nextval,5,1,4);
+insert into ratingTable values(ratingSequence.nextval,5,2,5);
+insert into ratingTable values(ratingSequence.nextval,5,3,6);
+insert into ratingTable values(ratingSequence.nextval,4,4,1);
+insert into ratingTable values(ratingSequence.nextval,2,5,8);
+commit;
+dbms_output.put_line('Values Inserted in the rating table');
+
+insert into commentTable values(commentSequence.nextval,'It was good',3,1);
+insert into commentTable values(commentSequence.nextval,'Improvement need',3,4);
+insert into commentTable values(commentSequence.nextval,'Excellent',3,5);
+insert into commentTable values(commentSequence.nextval,'Nice decor',1,11);
+insert into commentTable values(commentSequence.nextval,'Product was not fresh',2,1);
+insert into commentTable values(commentSequence.nextval,'Enchanting design',2,6);
+insert into commentTable values(commentSequence.nextval,'Wow!',3,10);
+commit;
+dbms_output.put_line('Values Inserted in the comment table');
+end;
+/
+
+select * from customerTable;
+
+select * from managementTable;
+
+select * from productTable;
+
+select * from ratingTable;
+
+select * from commentTable;
+
+
+--implementation of pl/sql to update ad delete data in the table 
+
+SET SERVEROUTPUT ON
+declare
+begin
+update customerTable
+set activeStatus='Approved'
+where customerID>0 and customerID<4;
+commit;
+Dbms_output.put_line('Active status Updated');
+delete commentTable
+where productID=4;
+commit;
+dbms_output.put_line('Value deleted in the comment table');
+end;
+/
+
+select * from customerTable;
+
+select * from commentTable;
+
+
+--create procedure to take orders
+
+create procedure take_order
+(c_id in orderTable.customerID%type,
+p_id in orderTable.productID%type,
+quant in orderTable.quantity%type
+)
+is u_price productTable.unitPrice%type;
+begin
+	select unitPrice into u_price from productTable where productID=p_id;
+	insert into orderTable values(orderSequence.nextval,c_id,p_id,u_price,quant,quant*u_price,default,default);
+
+	update productTable
+	set productSold=productSold+quant
+	where productID=p_id;
+
+	update productTable
+	set productAvailable=productAvailable-quant
+	where productID=p_id;
+
+end;
+/
+
+execute take_order(1,5,10);
+execute take_order(2,2,5);
+execute take_order(3,5,4);
+execute take_order(4,5,3);
+execute take_order(5,10,1);
+execute take_order(3,11,1);
+execute take_order(4,5,2);
+execute take_order(5,6,1);
+execute take_order(2,10,4);
+execute take_order(2,8,4);
+execute take_order(1,8,4);
+execute take_order(2,6,3);
+
+select * from orderTable;
+select * from productTable;
+
+
+--use cursor to check products availability
+
+SET SERVEROUTPUT ON
+create procedure check_availability is
+	cursor isavailable is select * from productTable where productAvailable<10;
+       	available isavailable%rowtype;
+begin
+	DBMS_OUTPUT.put_line('Product Name          Product ID');
+        open isavailable;
+        loop
+          fetch isavailable into available;
+          exit when isavailable%NOTFOUND;
+          DBMS_OUTPUT.put_line(available.productName||'          '||available.productID);
+       end loop;
+       close isavailable;
+	
+end;
+/
+
+execute check_availability();
+
+
+--implementation of pl/sql to update products amount 
+
+SET SERVEROUTPUT ON
+create procedure update_amount(
+p_id in productTable.productID%type,
+amount in productTable.productAvailable%type)
+is
+begin
+update productTable
+set productAvailable=productAvailable+amount
+where productID=p_id;
+commit;
+DBMS_OUTPUT.put_line('Amount of product updated successfully in the product table');
+end;
+/
+
+execute update_amount(5,30);
+execute update_amount(10,2);
+
+select * from productTable;
+
+
+--discount on products based on management type
+
+SET SERVEROUTPUT ON
+DECLARE
+unit_price productTable.unitPrice%type;
+discountPrice productTable.unitPrice%type;
+m_id productTable.managementID%type;
+p_name productTable.productName%type;
+begin
+p_name:='Exclusive bouquet';
+SELECT managementID into m_id 
+FROM productTable
+WHERE productName=p_name ;
+SELECT unitPrice into unit_price
+FROM productTable
+WHERE productName=p_name ;
+IF m_id<2 then
+discountPrice:= unit_price-(unit_price*0.15);
+ELSIF m_id>1 and m_id<3 then
+discountPrice := unit_price-(unit_price*0.25);
+ELSE
+discountPrice := unit_price;
+END IF;
+DBMS_OUTPUT.PUT_LINE ('Product Name: ' || p_name || ' Full Price: '||unit_price||' Disounted Pice: '|| ROUND(discountPrice,2));
+EXCEPTION
+WHEN others THEN
+DBMS_OUTPUT.PUT_LINE (SQLERRM);
+END;
+/
+
+
+--find out the maximum sold product
+
+SET SERVEROUTPUT ON
+declare
+maxSold productTable.productSold%type;
+p_name productTable.productName%type;
+begin
+select max(productSold) into maxSold  from productTable;
+select productName into p_name from productTable where productSold=maxSold; 
+dbms_output.put_line('The maximum sold product is : ' || 
+p_name);
+end;
+/
+
+
+--subquery operation to find out the details of the customers who've ordered for decoration
+
+select address, contactNumber from customerTable where  customerID in(
+select customerID from orderTable where productID in(
+select productID from productTable where managementID=4));
+
+
+--set operation
+
+--find out the most popular product i.e. the products which have maximum rating,comment and sales
+select productName from productTable where productID in(
+select productID from ratingTable
+intersect
+select productID from commentTable
+intersect
+select productID from orderTable);
+
+--find out the most active customer i.e. customers who appears most in the rating, comment and sales
+select customerName from customerTable where customerID in(select customerID from ratingTable)
+union all
+select customerName from customerTable where customerID in(select customerID from commentTable)
+union all
+select customerName from customerTable where customerID in(select customerID from orderTable);
+
+-- demand is less though they are attractive i.e. the products those have maximum ratings and comments but less sales
+select productName from productTable where productID in(
+(select productID from ratingTable
+union
+select productID from commentTable
+)
+minus
+select productID from orderTable
+);
+
+
+--join operation
+
+--find out the addresses who place order using inner join
+select o.orderID,o.receivedDate,c.customerName,c.address,c.contactNumber
+from orderTable o join customerTable c
+on o.customerID=c.customerID;
+
+--Same person rates and comments on same product using natural join
+select customerID, c.commentDescription,r.rating
+from commentTable c natural join ratingTable r;
+
+--find out the name of the products datewise which are sold and not sold using left outer join
+select p.productName,o.quantity,o.orderDate
+from productTable p left outer join orderTable o
+on p.productID=o.productID;
+--product name with sold quantity
+
+--find out the names of the customers who commented and not commented using right outer join
+select com.commentDescription,c.customerName
+from commentTable com right outer join customerTable c
+using(customerID);
+
+
+--Concatenate name and title of a customer using self join
+select
+(c1.customerName||' '||c2.customerTitle) fullName
+from customerTable c1 left join customerTable c2
+on c1.customerID=c2.customerID;
+
+
+--create view
+
+create view ratingView as
+select p.productName,r.rating
+from productTable p, ratingTable r
+where p.productID=r.productID;
+
+select productName,cast(avg (rating) as decimal(10,1)) as averageRating
+from ratingView
+group by productName
+order by averageRating desc;
+
+--this view will allow customers a quick glance on product's average rating
+
+create view customerView as
+select customerID,customerName,joinDate,address,contactNumber,activeStatus,emailAddress
+from customerTable;
+
+select * from customerView;
+
+--this allows to see the detail of a customer except the passwords as it is a sensitive issue to intact information.
